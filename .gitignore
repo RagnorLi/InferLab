@@ -9,6 +9,7 @@ venv/
 *.egg-info/
 
 # IDE
+.cursor/
 .vscode/
 .idea/
 *.swp
