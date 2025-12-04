@@ -15,6 +15,9 @@ venv/
 *.swp
 *.swo
 
+# myDocs
+docs/
+
 # OS
 .DS_Store
 Thumbs.db
@@ -24,3 +27,16 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+
+# Android
+*.apk
+*.aab
+local.properties
+
+# iOS
+*.ipa
+Pods/

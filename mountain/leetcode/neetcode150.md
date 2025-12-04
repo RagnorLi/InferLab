@@ -1,6 +1,6 @@
 # NeetCode 150 
 
-<img src="../public/leetcode/neetcode150.png" alt="official roadmap" width="50%">
+<img src="../resource/leetcode/neetcode150.png" alt="official roadmap" width="50%">
 
 ## 目录
 
