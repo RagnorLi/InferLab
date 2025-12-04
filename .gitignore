@@ -28,10 +28,6 @@ Thumbs.db
 # Logs
 *.log
 
-# Tauri
-src-tauri/target/
-src-tauri/gen/
-
 # Android
 *.apk
 *.aab
