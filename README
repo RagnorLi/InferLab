@@ -1,3 +1,6 @@
-What I cannot create, I do not understand ! That's my first principle!
+> What I cannot create, I do not understand! That's my first principle!
 
+commit: feat | fix | docs | refactor | test | chore
+scope:  leetcode | hpc | flashcard | band | app | setup
 
+example: feat(hpc): implement transformer attention mechanism
