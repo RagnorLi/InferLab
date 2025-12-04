@@ -31,9 +31,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
+        working-directory: app/infer-lab
         run: pnpm install
 
       - name: Build macOS app
+        working-directory: app/infer-lab
         run: pnpm tauri build
 
       - name: Upload macOS artifacts
@@ -41,8 +43,8 @@ jobs:
         with:
           name: macos-app
           path: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/*.app.tar.gz
+            app/infer-lab/src-tauri/target/release/bundle/dmg/*.dmg
+            app/infer-lab/src-tauri/target/release/bundle/macos/*.app.tar.gz
 
   # ==================== Windows 桌面端 ====================
   build-windows:
@@ -65,9 +67,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
+        working-directory: app/infer-lab
         run: pnpm install
 
       - name: Build Windows app
+        working-directory: app/infer-lab
         run: pnpm tauri build
 
       - name: Upload Windows artifacts
@@ -75,8 +79,8 @@ jobs:
         with:
           name: windows-app
           path: |
-            src-tauri/target/release/bundle/nsis/*.exe
-            src-tauri/target/release/bundle/msi/*.msi
+            app/infer-lab/src-tauri/target/release/bundle/nsis/*.exe
+            app/infer-lab/src-tauri/target/release/bundle/msi/*.msi
 
   # ==================== Linux 桌面端 ====================
   build-linux:
@@ -108,9 +112,11 @@ jobs:
             librsvg2-dev
 
       - name: Install dependencies
+        working-directory: app/infer-lab
         run: pnpm install
 
       - name: Build Linux app
+        working-directory: app/infer-lab
         run: pnpm tauri build
 
       - name: Upload Linux artifacts
@@ -118,8 +124,8 @@ jobs:
         with:
           name: linux-app
           path: |
-            src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/appimage/*.AppImage
+            app/infer-lab/src-tauri/target/release/bundle/deb/*.deb
+            app/infer-lab/src-tauri/target/release/bundle/appimage/*.AppImage
 
   # ==================== Android ====================
   build-android:
@@ -185,7 +191,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          path: app/infer-lab/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
 
   # ==================== iOS ====================
   build-ios:
@@ -217,9 +223,11 @@ jobs:
         run: sudo gem install cocoapods
 
       - name: Install dependencies
+        working-directory: app/infer-lab
         run: pnpm install
 
       - name: Build iOS app
+        working-directory: app/infer-lab
         run: pnpm tauri ios build
         continue-on-error: true  # iOS 构建可能因签名问题失败，但不影响其他平台
 
@@ -228,7 +236,7 @@ jobs:
         if: always()
         with:
           name: ios-app
-          path: src-tauri/gen/apple/build/**/*.app
+          path: app/infer-lab/src-tauri/gen/apple/build/**/*.app
 
   # ==================== 创建 GitHub Release ====================
   create-release:
