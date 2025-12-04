@@ -169,9 +169,11 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.1.8937393" >> $GITHUB_ENV
 
       - name: Install dependencies
+        working-directory: app/infer-lab
         run: pnpm install
       
       - name: Initialize Android project
+        working-directory: app/infer-lab
         run: pnpm tauri android init
 
       - name: Setup signing keystore
@@ -228,6 +230,8 @@ jobs:
 
       - name: Build iOS app
         working-directory: app/infer-lab
+        # 注意：iOS 构建需要 Apple Developer 账号和签名配置
+        # 如果没有配置，构建会失败但不影响其他平台
         run: pnpm tauri ios build
         continue-on-error: true  # iOS 构建可能因签名问题失败，但不影响其他平台
 
