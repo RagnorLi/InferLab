@@ -33,7 +33,7 @@ const generateDemoHistory = (): DailyRecord[] => {
 };
 
 function App() {
-  const { state, currentAltitude, getRecordForDate, actions, dbConnected, loading } = useAppData();
+  const { state, currentAltitude, getRecordForDate, actions, dbConnected } = useAppData();
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -56,6 +56,7 @@ function App() {
       <div className="mountain-layer">
         <Mountain3D
           milestones={state.milestones}
+          history={activeHistory}
           currentAltitude={activeAltitude}
         />
       </div>

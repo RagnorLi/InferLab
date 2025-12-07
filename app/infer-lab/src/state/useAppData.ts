@@ -4,7 +4,6 @@ import {
   AppState,
   DailyRecord,
   defaultState,
-  getTodayStr,
   HabitId,
   HABITS,
   Milestone,
@@ -153,7 +152,7 @@ export const useAppData = () => {
           const dataResult = await invoke<ApiResponse<AppDataFromDb>>("load_app_data");
           
           if (dataResult.success && dataResult.data) {
-            const { milestones, history, altitude } = convertDbToFrontend(dataResult.data);
+            const { milestones, history } = convertDbToFrontend(dataResult.data);
             setState({
               milestones: milestones.length > 0 ? milestones : DEFAULT_MILESTONES,
               history,
