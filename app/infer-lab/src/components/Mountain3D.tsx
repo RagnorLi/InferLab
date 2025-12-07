@@ -10,6 +10,19 @@ interface Props {
 
 const MAX_ALTITUDE = 5000;
 
+// 使用种子生成固定的伪随机数
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+// 预生成固定的星星位置
+const STARS = Array.from({ length: 50 }, (_, i) => ({
+  left: seededRandom(i * 3 + 1) * 100,
+  top: seededRandom(i * 3 + 2) * 40,
+  delay: seededRandom(i * 3 + 3) * 3,
+}));
+
 export function Mountain3D({ milestones, history: _history, currentAltitude }: Props) {
   const progress = useMemo(() => Math.min(currentAltitude / MAX_ALTITUDE, 1), [currentAltitude]);
   
@@ -52,16 +65,16 @@ export function Mountain3D({ milestones, history: _history, currentAltitude }: P
       {/* Sky gradient */}
       <div className="sky" />
       
-      {/* Stars */}
+      {/* Stars - 使用预生成的固定位置 */}
       <div className="stars">
-        {[...Array(50)].map((_, i) => (
+        {STARS.map((star, i) => (
           <div 
             key={i} 
             className="star"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 40}%`,
-              animationDelay: `${Math.random() * 3}s`,
+              left: `${star.left}%`,
+              top: `${star.top}%`,
+              animationDelay: `${star.delay}s`,
             }}
           />
         ))}
@@ -146,24 +159,48 @@ export function Mountain3D({ milestones, history: _history, currentAltitude }: P
           );
         })}
 
-        {/* Climber - Main character marker - PROMINENT */}
-        <g className="climber">
-          {/* Outer glow - large */}
-          <circle cx={climberPos.x} cy={climberPos.y} r="5" className="climber-glow" />
-          {/* Core body */}
-          <circle cx={climberPos.x} cy={climberPos.y} r="2.5" className="climber-body" />
-          {/* Pulse ring */}
-          <circle cx={climberPos.x} cy={climberPos.y} r="4" className="climber-pulse" />
-          {/* Vertical beacon line - tall */}
-          <line 
-            x1={climberPos.x} 
-            y1={climberPos.y - 2.5} 
-            x2={climberPos.x} 
-            y2={climberPos.y - 10}
-            className="climber-beacon"
+        {/* 火把 - 当前位置标记 */}
+        <g className="torch">
+          {/* 火焰光晕 */}
+          <ellipse 
+            cx={climberPos.x} 
+            cy={climberPos.y - 8} 
+            rx="4" 
+            ry="5"
+            className="flame-glow"
           />
-          {/* Beacon top dot */}
-          <circle cx={climberPos.x} cy={climberPos.y - 10} r="1.2" className="climber-beacon-dot" />
+          {/* 火焰主体 */}
+          <path 
+            d={`M ${climberPos.x} ${climberPos.y - 12} 
+                Q ${climberPos.x - 2} ${climberPos.y - 9} ${climberPos.x - 1.5} ${climberPos.y - 6}
+                Q ${climberPos.x} ${climberPos.y - 7} ${climberPos.x + 1.5} ${climberPos.y - 6}
+                Q ${climberPos.x + 2} ${climberPos.y - 9} ${climberPos.x} ${climberPos.y - 12}`}
+            className="flame-outer"
+          />
+          {/* 火焰内核 */}
+          <path 
+            d={`M ${climberPos.x} ${climberPos.y - 11} 
+                Q ${climberPos.x - 1} ${climberPos.y - 9} ${climberPos.x - 0.8} ${climberPos.y - 7}
+                Q ${climberPos.x} ${climberPos.y - 7.5} ${climberPos.x + 0.8} ${climberPos.y - 7}
+                Q ${climberPos.x + 1} ${climberPos.y - 9} ${climberPos.x} ${climberPos.y - 11}`}
+            className="flame-inner"
+          />
+          {/* 火把柄 */}
+          <rect 
+            x={climberPos.x - 0.8} 
+            y={climberPos.y - 6} 
+            width="1.6" 
+            height="6"
+            rx="0.4"
+            className="torch-handle"
+          />
+          {/* 底座点 */}
+          <circle 
+            cx={climberPos.x} 
+            cy={climberPos.y} 
+            r="1"
+            className="torch-base"
+          />
         </g>
 
         {/* Summit marker */}

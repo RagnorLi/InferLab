@@ -1,12 +1,17 @@
-import { useEffect, useState, useMemo } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useState, useMemo } from "react";
 import "./App.css";
 import { Mountain3D } from "./components/Mountain3D";
 import { TodayPanel } from "./components/TodayPanel";
 import { useAppData } from "./state/useAppData";
 import { DailyRecord, calculateAltitude } from "./models/schema";
 
-// Demo data generator
+// 种子随机数生成器（保证一致性）
+const seededRandom = (seed: number) => {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+};
+
+// Demo data generator - 使用种子随机确保一致
 const generateDemoHistory = (): DailyRecord[] => {
   const history: DailyRecord[] = [];
   const today = new Date();
@@ -17,10 +22,10 @@ const generateDemoHistory = (): DailyRecord[] => {
     const dateStr = d.toISOString().slice(0, 10);
     
     const completed: Record<string, boolean> = {};
-    if (Math.random() > 0.2) completed["leetcode"] = true;
-    if (Math.random() > 0.4) completed["hpc"] = true;
-    if (Math.random() > 0.6) completed["anki"] = true;
-    if (Math.random() > 0.8) completed["band"] = true;
+    if (seededRandom(i * 4 + 1) > 0.2) completed["leetcode"] = true;
+    if (seededRandom(i * 4 + 2) > 0.4) completed["hpc"] = true;
+    if (seededRandom(i * 4 + 3) > 0.5) completed["sysdesign"] = true;
+    if (seededRandom(i * 4 + 4) > 0.6) completed["anki"] = true;
 
     history.push({ date: dateStr, completed });
   }
@@ -51,7 +56,6 @@ function App() {
       <div className="mountain-layer">
         <Mountain3D
           milestones={state.milestones}
-          history={activeHistory}
           currentAltitude={activeAltitude}
         />
       </div>
@@ -112,6 +116,7 @@ function App() {
         {/* Today Panel - Floating Card */}
         <div className={`floating-panel ${panelOpen ? 'open' : ''}`}>
           <TodayPanel
+            history={activeHistory}
             getRecordForDate={getRecordForDate}
             toggleHabit={actions.toggleHabit}
             logHabit={actions.logHabit}
