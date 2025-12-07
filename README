@@ -1,6 +1,18 @@
 > What I cannot create, I do not understand! That's my first principle!
 
-commit: feat | fix | docs | refactor | test | chore
-scope:  leetcode | hpc | flashcard | band | app | setup
+## Project Overview
 
-example: feat(hpc): implement transformer attention mechanism
+Built a progress tracking app for LLM inference learning, visualizing learning progress as "climbing the knowledge mountain".
+
+![Mountain App](./mountain/resource/app/mountain-app.png)
+
+## Commit Convention
+
+**Type:** `feat` | `fix` | `docs` | `refactor` | `test` | `chore`
+
+**Scope:** `leetcode` | `hpc` | `flashcard` | `band` | `app` | `setup`
+
+**Example:**
+```
+feat(hpc): implement transformer attention mechanism
+```
