@@ -8,6 +8,12 @@ env/
 venv/
 *.egg-info/
 
+# Node / pnpm
+node_modules/
+.pnpm-store/
+dist/
+.turbo/
+
 # IDE
 .cursor/
 .vscode/
@@ -36,3 +42,7 @@ local.properties
 # iOS
 *.ipa
 Pods/
+
+# Rust / Tauri
+target/
+*.rs.bk

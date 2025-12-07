@@ -1,0 +1,341 @@
+/* === TODAY PANEL === */
+.today-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* === HEADER === */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.panel-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.header-right {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.gain-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.gain-unit {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* === PROGRESS RING === */
+.progress-section {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.progress-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 8;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.progress-count {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.progress-total {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* === HABIT LIST === */
+.habit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.habit-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.habit-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.habit-card.expanded {
+  border-color: var(--accent);
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.habit-card.done {
+  opacity: 0.7;
+}
+
+.habit-card.done:hover {
+  opacity: 1;
+}
+
+/* === HABIT ROW === */
+.habit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.check-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: transparent;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.check-btn:hover {
+  border-color: var(--accent);
+}
+
+.check-btn.checked {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.habit-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.habit-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.habit-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.habit-name .time-slot {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.habit-name.done {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+.habit-name.done .time-slot {
+  text-decoration: none;
+}
+
+.habit-gain {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.log-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #facc15;
+  flex-shrink: 0;
+}
+
+.expand-icon {
+  color: var(--text-muted);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* === HABIT DETAIL === */
+.habit-detail {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--glass-border);
+  margin-top: -4px;
+  padding-top: 12px;
+}
+
+.habit-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.action-btn {
+  padding: 10px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.action-btn:hover {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+.log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.log-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  resize: none;
+  transition: border-color 0.2s;
+}
+
+.log-input::placeholder {
+  color: var(--text-muted);
+}
+
+.log-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.save-btn {
+  padding: 10px 16px;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  color: var(--success);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-btn:hover {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+/* === OPTIONAL SECTION === */
+.optional-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 12px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.optional-divider::before,
+.optional-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--glass-border);
+}
+
+.habit-list.optional .habit-card {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.habit-list.optional .habit-card:hover {
+  opacity: 1;
+}
+
+.habit-card.optional .check-btn {
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.habit-card.optional .check-btn.checked {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+}
