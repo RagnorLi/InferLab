@@ -31,6 +31,11 @@
 
 """
 
+from ast import Raise, main
+from re import S
+import re
+
+
 class Array:
     """
     动态数组实现
@@ -73,7 +78,7 @@ class Array:
         Raises:
             IndexError: 索引越界
         """
-        if not 0 <= index <= self._size:
+        if not 0 <= index < self._size:
             raise IndexError(f"Index {index} out of range [0, {self._size}]")
         return self._data[index]
 
@@ -104,3 +109,139 @@ class Array:
             Value: 要追加的值
 
         """
+        # 如果容量不足，先扩容
+        if self._size >= self._capacity:
+            self._resize(self._capacity * 2)
+        
+        self._data[self._size] = value # self._size means the storaged value length
+        self._size += 1
+
+    def insert(self, index: int, value):
+        """
+        在指定位置插入元素 O(n)
+
+        需要将 index 之后的元素都向后移动一位
+
+        Args:
+            index: 插入位置
+            value: 要插入的值
+
+        Raises:
+            IndexError: 索引越界
+        """
+        if not 0 <= index <= self._size:
+            raise IndexError(f"Index {index} out of range [0, {self._size}]")
+
+        # 如果容量不足，先扩容
+        if self._size >= self._capacity:
+            self._resize(self._capacity * 2)
+
+        # 将 index 之后的元素向后移动: 从最后一个开始一个一个向后退
+        for i in range(self._size, index, -1):
+            self._data[i] = self._data[i - 1]
+
+        self._data[index] = value
+        self._size += 1
+
+    def delete(self, index: int):
+        """
+        删除指定位置的元素 O(n)
+
+        需要将 index 之后的元素都向前移动一位
+
+        Args:
+            index: 要删除的位置
+        
+        Returns:
+            Object: 被删除的元素
+        
+        Raises:
+            IndexError: 索引越界
+        """
+        if not 0 <= index < self._size:
+            raise IndexError(f"Index {index} out of range [0, {self._size}]")
+
+        removed = self._data[index]
+
+        # 将index 之后的元素向前移动
+        for i in range(index, self._size - 1):
+            self._data[i] = self._data[i + 1]
+
+        self._size -= 1
+        self._data[self._size] = None # 清理最后一个位置
+
+        # 可选： 如果元素数量远小于容量，进行缩容
+        # 避免频繁扩容缩容，使用1/4 作为阈值
+        if self._size > 0 and self._size < self._capacity // 4:
+            self._resize(self._capacity // 2)
+
+        return removed
+
+    def __len__(self) -> int:
+        """
+        返回数组长度 O(1)
+        """
+        return self._size
+
+    def __repr__(self) -> str:
+        """
+        字符串表示，只显示实际元素
+        """
+        elements = [self._data[i] for i in range(self._size)]
+        return f"Array({elements}), size={self._size}. capacity={self._capacity}"
+
+    def _resize(self, new_capacity: int):
+        """
+        内部方法： 调整数组容量
+
+        时间复杂度： 单次_resize复杂度是O(n)因为复制所有元素, 但摊销到多次操作后， 在整体 append/use 场景下平均为 O(1)
+
+        Args: 
+            new_capacity: 新的容量
+        
+        Raise:
+            ValueError: 值错误
+        """
+        if new_capacity < self._size:
+            raise ValueError(f"New capacity {new_capacity} is too small for {self.size} elements")
+
+        old_data = self._data
+        self._data = [None] * new_capacity
+        self._capacity = new_capacity
+
+        # 复制所有元素
+        for i in range(self._size):
+            self._data[i] = old_data[i]
+
+if __name__ == "__main__":
+    # 基础功能测试
+    arr = Array(capacity=3)
+    print(f"初始状态: {arr}")
+    
+    # 测试 append
+    arr.append(1)
+    arr.append(2)
+    arr.append(3)
+    print(f"追加 3 个元素: {arr}")
+    
+    # 测试扩容
+    arr.append(4)
+    print(f"触发扩容后: {arr}")
+    
+    # 测试随机访问
+    print(f"arr[0] = {arr[0]}")
+    arr[0] = 10
+    print(f"修改后 arr[0] = {arr[0]}")
+    
+    # 测试 insert
+    arr.insert(1, 99)
+    print(f"在索引 1 插入 99: {arr}")
+    
+    # 测试 delete
+    removed = arr.delete(2)
+    print(f"删除索引 2 的元素 {removed}: {arr}")
+    
+    # 测试缩容（需要删除足够多的元素）
+    arr.delete(0)
+    arr.delete(0)
+    print(f"删除后可能触发缩容: {arr}")
