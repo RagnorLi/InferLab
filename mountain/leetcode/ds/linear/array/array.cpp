@@ -43,7 +43,9 @@ C++ 版本的关键点：
 */
 
 #include <cstddef>
-#include <stdexcept>
+#include <iostream>
+#include <ostream>
+#include <stdio.h>
 #include <algorithm>
 #include <utility>
 #include <cassert>
@@ -281,5 +283,223 @@ public:
         ++size_;
     }
 
+    /**
+    在指定位置插入元素
 
+    需要将index之后的元素都向后移动一位
+
+    时间复杂度O(n)
+    
+    @param index插入位置
+    @param value 要插入的值
+    */
+    void insert(size_t index, const T& value){ // 参数 value 是 T 类型的常量引用（const reference）
+        if (index > size_){
+            throw std::out_of_range("Index out of range");
+        }
+
+        // 如果容量不足，先扩容
+        if (size_ >= capacity_){
+            resize(capacity_ * 2);
+        }
+
+        // 将index之后的元素向后移动
+        for (size_t i = size_; i > index; --i){
+            data_[i] = std::move(data_[i - 1]);
+        }
+
+        data_[index] = value;
+        ++size_;
+    }
+
+    /**
+    在指定位置插入元素（移动版本）
+
+    @param index 插入位置
+    @param value 要插入的值 （右值引用）
+    */
+    // 这里不用 const T&& value 是因为移动语义要求能够修改参数 value，
+    // 即将 value 的内部资源“移动”（窃取）到容器内。如果加上 const，
+    // 就无法执行 move 或修改操作，失去了使用右值引用的意义。
+    void insert(size_t index, T&& value){
+        if (index > size_){
+            throw std::out_of_range("Index out of range");
+        }
+
+        if (size_ >= capacity_){
+            resize(capacity_ * 2);
+        }
+
+        for (size_t i = size_; i > index; --i){
+            data_[i] = std::move(data_[i - 1]); // 倒车请注意 倒车请注意哈哈
+        }
+
+        data_[index] = std::move(value);
+        ++size_;
+    }
+
+    /**
+    删除指定位置的元素
+
+    需要将index之后的元素都都向前移动一位
+
+    时间复杂度：O(n)
+    
+    @param index 要删除的位置
+    @return 被删除的元素
+    */
+    T remove(size_t index){
+
+        if (index >= size_){
+            throw std::out_of_range("Index out of range");
+        }
+
+        T removed = std::move(data_[index]); // 这里索引取的是内存地址 还是 值呢
+
+        // 将index之后的元素向前移动
+        for (size_t i = index; i < size_ - 1; ++i){
+            data_[i] = std::move(data_[i+1]);
+        }
+
+        --size_;
+
+        // 可选: 如果元素数量远小于容量，进行缩容
+        // 避免频繁扩容缩容，使用1/4作为阈值
+        if (size_ > 0 && size_ < capacity_ / 4){
+            resize(capacity_ / 2);
+        }
+
+        return removed;
+    }
+
+
+    /**
+    返回数组长度
+
+    时间复杂度：O(1)
+
+    @return 当前元素数量
+    */
+    // Yes, marking the method as 'const' tells the compiler that this method will not modify any member variables
+    // of the class, not just 'size_'. That is, no member variables (except those marked as 'mutable')
+    // can be changed in any way inside 'length'. This guarantees that calling 'length' does not alter the object's state.
+    size_t length() const {
+        return size_;
+    }
+
+    /**
+    判断数组是否为空
+
+    时间复杂度：O(1)
+
+    @return 如果为空返回true,否则返回false
+    */
+    bool empty() const{
+        return size_ == 0;
+    }
+
+    /**
+    获取当前容量
+
+    @return 当前容量
+    */
+    size_t capacity() const{
+        return capacity_;
+    }
+
+    /**
+    交换两个数组（用于copy-and-swap idiom）
+
+    @param other 要交换的数组
+    */
+    void swap(Array& other) noexcept{
+
+        // Directly exchange the internal state of the two arrays.
+        // auto tmp_data = data_; data_ = other.data_; other.data_ = tmp_data;
+        // auto tmp_size = size_; size_ = other.size_; other.size_ = tmp_size;
+        // auto tmp_capacity = capacity_; capacity_ = other.capacity_; other.capacity_ = tmp_capacity;
+
+        // clean且地道的C++写法（对所有成员使用std::swap）
+        std::swap(data_, other.data_);
+        std::swap(size_, other.size_);
+        std::swap(capacity_, other.capacity_);
+    }
+
+    /**
+    输出数组内容用于调试
+    */
+    friend std::ostream& operator<<(std::ostream& os, const Array& arr){
+        os << "Array([";
+        for (size_t i = 0; i < arr.size_; ++i){
+            os << arr.data_[i];
+            if (i < arr.size_ - 1) {
+                os << ", ";
+            }
+        }
+        os << "], size=" << arr.size_ << ", capacity=" << arr.capacity_ << ")";
+        return os;
+    }
 };  
+
+/**
+测试代码 优化 vs 调试
+   clang++ -std=c++11 -Wall -Wextra -O2 array.cpp -o array
+   clang++ -std=c++11 -Wall -Wextra -g array.cpp -o array
+TODO: GDB调试
+*/ 
+int main(){
+    try{
+        // 基础功能测试
+        Array<int> arr(3);
+        std::cout << "初始状态: " << arr << std::endl;
+
+        // 测试 append
+        arr.append(1);
+        arr.append(2);
+        arr.append(3);
+        std::cout << "追加 3 个元素: " << arr << std::endl;
+
+        // 测试扩容
+        arr.append(4);
+        std::cout << "触发扩容后: " << arr << std::endl;
+
+        // 测试随机访问
+        std::cout << "arr[0] = " << arr[0] << std::endl;
+        arr[0] = 10;
+        std::cout << "修改后 arr[0] = " << arr[0] << std::endl;
+
+        // 测试 insert
+        arr.insert(1, 99);
+        std::cout << "在索引 1 插入 99: " << arr << std::endl;
+
+        // 测试 remove
+        int removed = arr.remove(2);
+        std::cout << "删除索引 2 的元素 " << removed << ": " << arr << std::endl;
+
+        // 测试缩容（需要删除足够多的元素）
+        arr.remove(0);
+        arr.remove(0);
+        std::cout << "删除后可能触发缩容: " << arr << std::endl;
+
+        // 测试拷贝构造
+        Array<int> arr2 = arr;
+        std::cout << "拷贝构造 arr2: " << arr2 << std::endl;
+
+        // 测试移动构造
+        Array<int> arr3 = std::move(arr2);
+        std::cout << "移动构造 arr3: " << arr3 << std::endl;
+        std::cout << "移动后的 arr2: " << arr2 << std::endl;
+
+        // 测试泛型（字符串）
+        Array<std::string> strArr(2);
+        strArr.append("hello");
+        strArr.append("world");
+        std::cout << "字符串数组: " << strArr << std::endl;
+
+    }catch (const std::exception& e) {
+        std::cerr << "异常: " << e.what() << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
