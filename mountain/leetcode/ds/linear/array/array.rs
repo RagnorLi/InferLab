@@ -1,4 +1,3 @@
-use std::collections::hash_map::VacantEntry;
 /**
  * 数组 (Array) - Rust 实现
  * 
@@ -42,9 +41,7 @@ use std::collections::hash_map::VacantEntry;
 *  5.底层存储：使用 Vec<T>（惯用法）或原始指针（更接近 C++）
 */
 
-#[allow(unused_imports)]
 use std::fmt;
-#[allow(unused_imports)]
 use std::ops::{Index, IndexMut};
 
 /* 
@@ -122,7 +119,7 @@ impl<T> Array<T>{
      
      # Returns
      
-     如果索引有效, 返回 `Some(&mut T)`, 否则返回 `None`
+     如果索引有效, 返回 `Some(&mut T)`, 否则返回 `None`； mut 就是mutable （可变的）
      在 Rust 中，`&mut self` 表示方法以*可变借用*方式访问对象，可以修改自身状态。
      这也是语法固定写法：
        - `&self`：不可变借用（可有多个，不可修改）
@@ -173,6 +170,52 @@ impl<T> Array<T>{
         self.size += 1;
     }
 
+    /**
+     * 在指定位置插入元素
+     * 
+     * 需要将 index 之后的元素都向后移动一位
+     * 
+     * # Arguments
+     * 
+     * * `index` - 插入位置，必须在 [0, size] 范围内
+     * * `value` - 要插入的值
+     * 
+     * # Returns
+     * 
+     * 如果索引有效，返回 `Ok(())`，否则返回 `Err(String)`
+     * 
+     * # 时间复杂度
+     * 
+     * O(n)
+     */
+    pub fn insert(&mut self, index: usize, value: T) -> Result<(), String> {
+        if index > self.size {
+            return Err(format!("Index {} out of range [0, {}]", index, self.size));
+        }
+    
+        // 如果容量不足，先扩容
+        if self.size >= self.capacity {
+            self.resize(self.capacity * 2);
+        }
+    
+        // 确保 Vec 有足够的空间
+        if self.data.len() <= self.size {
+            self.data.push(value);
+        } else {
+            // 如果 Vec 有足够容量，先 push 一个占位符
+            self.data.push(value);
+        }
+        
+        // 手动移动元素：将 index 到 size-1 的元素向后移动一位
+        // 从后往前移动，避免覆盖
+        for i in (index..self.size).rev() {
+            self.data.swap(i, i + 1);
+        }
+        
+        self.size += 1;
+        Ok(())
+    }
+
     /*
     删除指定位置的元素1
 
@@ -220,7 +263,7 @@ impl<T> Array<T>{
      * 时间复杂度 O(1)
     */
     pub fn is_empty(&self) -> bool{
-        self.size == 0;
+        self.size == 0
     }
 
     /**
@@ -266,6 +309,8 @@ impl<T> Array<T>{
 
 /*
 【本质】Trait 是编译期约束类型行为的接口系统——规定类型必须实现哪些方法、操作或属性。
+ Rust 中的 trait（特征）在语法和机制上接近 Java 的 interface（接口）、C++ 的抽象基类（Abstract Base Class），
+ 但本质是编译期的行为约束接口系统。
 
 【翻译】
 - Trait 就是“要求你会做这些事情”的接口清单，静态检查谁能干哪些操作。
@@ -292,17 +337,292 @@ fn hire<C: Cook>(chef: C) {
 
 */
 
-/// 实现Index trait,支持
+/// 实现Index trait,支持 arr[index] 语法，这里Index index是固定的
+impl<T> Index<usize> for Array<T>{
+
+    // 这里声明了关联类型 Output（特征关联类型机制）
+    // 【本质】type 关键字在 trait impl 块中用于“指定此类型实现该 trait 时，某个类型成员的具体类型”。
+    // 【翻译】告诉编译器：对于实现了 Index 的 Array<T>，arr[index] 表达式的结果类型必须是 T。
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        if index >= self.size{
+            panic!("Index {} out of range [0, {}]", index, self.size);
+        }
+
+        // 设计为只读，是因为实现 Index trait 时参数类型为 &self，
+        // 表示只允许不可变借用（不会修改自身），所以只能返回元素的不可变引用。
+        // 这样 arr[index] 语法天然只做读取，不允许通过它修改数组内容，符合 Index trait 的安全抽象设计。
+        &self.data[index]
+    }    
+}
+
+/// 实现IndexMut trait, 支持arr[index] = value 语法，这里IndexMut index_mut是固定的
+impl<T> IndexMut<usize> for Array<T>{
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        if index >= self.size{
+            panic!("Index {} out of range [0, {}]", index, self.size);
+        }
+        &mut self.data[index]
+    }
+
+}
+
+/// 实现 Display trait, 支持 println!("{}", arr); fmt -> format
+/// 总结：
+/// - impl<T: fmt::Display> ... —— 这是限定“元素 T 必须可打印”
+/// - ... fmt::Display for Array<T> —— 这是实际给 Array<T> 实现 Display trait
+///
+/// 真正“约束”T的，是冒号前面的 `<T: fmt::Display>`，而 for 前面那个 fmt::Display 是指定在为谁实现该 trait
+
+/**
+ * Trait/impl 是编译期的能力系统，通过静态单态化实现零成本抽象，而非运行时的接口继承系统。
+
+ * Trait = 技能证书，Impl = 颁发证书
+    - 技能证书（trait）：声明能力（如“会开车”“会说英语”）
+    - 颁发证书（impl）：证明某人/某类型拥有该能力
+    - 能力组合：一个人可以同时有多个证书
+    - 招聘要求（泛型约束）：要求应聘者必须有某证书才能应聘
+    - 能力验证（单态化）：在编译期就确认每个应聘者都有所需证书，直接匹配岗位，无需运行时再查证
+   对应关系：
+    - 证书 = trait（能力声明）
+    - 颁发 = impl（提供实现）
+    - 多个证书 = 多 trait 实现（能力组合）
+    - 招聘要求 = 泛型约束（T: Display）
+    - 编译期验证 = 单态化（零成本）
+
+    特性	      传统 OOP（接口继承）	Rust Trait
+    实现方式	    运行时虚表查找	    编译期静态分发
+    性能	        虚函数调用开销	    零成本（内联）
+    组合能力	    单继承限制	        多 trait 组合
+    为外部类型扩展	 无法扩展	         可以扩展
+ * 
+*/
+impl<T: fmt::Display> fmt::Display for Array<T>{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Array([")?;
+        for (i, item) in self.data.iter().take(self.size).enumerate(){
+            if i > 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{}", item)?;
+        }    
+        write!(f, "], size={}, capavity={})", self.size, self.capacity)
+    }
+}
+
+/// 实现Debug trait,支持 println!("{:?}", arr); 语法
+impl<T: fmt::Debug> fmt::Debug for Array<T>{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Array {{ data: {:?}, size:{}, capacity: {} }}",
+            // self.data[..self.size] 表示从 self.data 的第 0 个元素（含）到第 self.size 个元素（不含）获得一个切片视图。
+            &self.data[..self.size], self.size, self.capacity)
+    }
+}
+
+/// 实现迭代器（不可变引用）
+/**
+ * 
+ * 【本质1】这是“生命周期标记 + 借用实现”的语法：`impl<'a, T> IntoIterator for &'a Array<T>` 意味着“对活在 `'a` 借用期内的 `&Array<T>` 实现可迭代”，确保迭代出的引用寿命不超过这次借用。
+
+【翻译】
+- `&'a Array<T>`：带名字 `'a` 的不可变借用，`'a` 表示“这次借用能活多久”。
+- `IntoIterator for &'a Array<T>`：给这种带借用的引用实现迭代，返回的每个元素引用都绑定在同一个 `'a` 上。
+- 编译器用 `'a` 静态检查：迭代器里的引用绝不会比原借用活得更久，防止悬垂。
+
+【比喻】
+借书证有效期 = `'a`。`&'a Array<T>` 是这张有有效期的借书证，迭代器借出的每一页复印件（元素引用）有效期都不能超出这张证的有效期。
+
+【证明（简化版）】
+```rust
+impl<'a, T> IntoIterator for &'a Array<T> {
+    type Item = &'a T;               // 元素引用活在 'a 内
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data[..self.size].iter() // 迭代器借用同一个 'a
+    }
+}
+// 若试图让迭代器或元素引用活得更久于原 &Array 借用，编译期直接报错。
+```
+
+【动机】显式生命周期让编译器在编译期证明“引用不悬垂”，零运行时开销。这是 Rust 的借用检查模型。
+ * 
+ * 
+ * 【本质2】类型别名（type alias）：用一个新名字绑定已有类型，不造新类型，只是重命名。
+
+【翻译】`type MyInt = i32;` 之后 `MyInt` 和 `i32` 在类型系统里完全等价，只是换个更有语义的名字，减少重复、提升可读性。
+
+【比喻】给“身份证号”起一个标签名，比如“员工编号”，实质还是同一个号码，没有新证件，只是换个称呼。
+
+【证明】
+```rust
+type MyInt = i32;
+
+fn add(a: MyInt, b: i32) -> i32 {  // MyInt 和 i32 可互换
+    a + b
+}
+```
+
+【动机】减少冗长类型写法、提升语义清晰度（如为复杂泛型取短名），不引入运行时或类型系统新开销。
+ * 
+*/
+impl<'a, T> IntoIterator for &'a Array<T>{
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data[..self.size].iter()
+    }
+}
+
+/// 实现迭代器（可变引用）
+impl<'a, T> IntoIterator for &'a mut Array<T> {
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data[..self.size].iter_mut()
+    }
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn test_basic_operations(){
+        let mut arr = Array::new(3);
+        assert_eq!(arr.len(), 0);
+        assert!(arr.is_empty());
+
+        // 测试append
+        arr.append(1);
+        arr.append(2);
+        arr.append(3);
+
+        assert_eq!(arr.len(), 3);
+        assert_eq!(arr[0], 1);
+        assert_eq!(arr[1], 2);
+        assert_eq!(arr[2], 3);
+
+        // 测试扩容
+        arr.append(4);
+        assert_eq!(arr.len(), 4);
+        assert!(arr.capacity() >= 4);
+
+         // 测试随机访问
+         arr[0] = 10;
+         assert_eq!(arr[0], 10);
+ 
+         // 测试 insert
+         arr.insert(1, 99).unwrap();
+         assert_eq!(arr[1], 99);
+         assert_eq!(arr.len(), 5);
+ 
+         // 测试 remove
+         let removed = arr.remove(2).unwrap();
+         assert_eq!(removed, 2);
+         assert_eq!(arr.len(), 4);
+    }    
+
+    #[test]
+    fn test_get_methods() {
+        let mut arr = Array::new(5);
+        arr.append(10);
+        arr.append(20);
+
+        assert_eq!(arr.get(0), Some(&10));
+        assert_eq!(arr.get(1), Some(&20));
+        assert_eq!(arr.get(2), None);
+
+        if let Some(value) = arr.get_mut(0) {
+            *value = 100;
+        }
+        assert_eq!(arr[0], 100);
+    }
+
+    #[test]
+    fn test_iterator() {
+        let mut arr = Array::new(5);
+        arr.append(1);
+        arr.append(2);
+        arr.append(3);
+
+        let mut sum = 0;
+        for item in &arr {
+            sum += *item;
+        }
+        assert_eq!(sum, 6);
+
+        // 测试可变迭代器
+        for item in &mut arr {
+            *item *= 2;
+        }
+        assert_eq!(arr[0], 2);
+        assert_eq!(arr[1], 4);
+        assert_eq!(arr[2], 6);
+    }
+
+    #[test]
+    fn test_string_array() {
+        let mut arr = Array::new(2);
+        arr.append("hello".to_string());
+        arr.append("world".to_string());
+
+        assert_eq!(arr[0], "hello");
+        assert_eq!(arr[1], "world");
+    }
+}
 
 
 fn main(){
     // 基础功能测试
     let mut arr = Array::new(3);
-    // println! 是 Rust 的打印宏，用于输出到控制台；
-    // "!" 表示它是宏（不是普通函数）；
-    // "{}" 是占位符，用于插入变量的值；
-    // ":?" 表示采用 Debug 格式输出，适用于打印像 Array 这种自定义结构体。
     println!("初始状态: {:?}", arr);
+
+     // 测试 append
+     arr.append(1);
+     arr.append(2);
+     arr.append(3);
+     println!("追加 3 个元素: {}", arr);
+ 
+     // 测试扩容
+     arr.append(4);
+     println!("触发扩容后: {}", arr);
+ 
+     // 测试随机访问
+     println!("arr[0] = {}", arr[0]);
+     arr[0] = 10;
+     println!("修改后 arr[0] = {}", arr[0]);
+ 
+     // 测试 insert
+     arr.insert(1, 99).unwrap();
+     println!("在索引 1 插入 99: {}", arr);
+ 
+     // 测试 remove
+     if let Some(removed) = arr.remove(2) {
+         println!("删除索引 2 的元素 {}: {}", removed, arr);
+     }
+ 
+     // 测试 get 方法
+     match arr.get(0) {
+         Some(value) => println!("arr.get(0) = {}", value),
+         None => println!("索引越界"),
+     }
+ 
+     // 测试迭代器
+     println!("迭代数组:");
+     for item in &arr {
+         print!("{} ", item);
+     }
+     println!();
+ 
+     // 测试字符串数组
+     let mut str_arr = Array::new(2);
+     str_arr.append("hello".to_string());
+     str_arr.append("world".to_string());
+     println!("字符串数组: {}", str_arr);
 }
 
 
