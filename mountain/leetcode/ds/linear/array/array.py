@@ -116,6 +116,7 @@ class Array:
         self._data[self._size] = value # self._size means the storaged value length
         self._size += 1
 
+    # [ANCHOR: INSERT_LOGIC]
     def insert(self, index: int, value):
         """
         在指定位置插入元素 O(n)
@@ -245,3 +246,4 @@ if __name__ == "__main__":
     arr.delete(0)
     arr.delete(0)
     print(f"删除后可能触发缩容: {arr}")
+

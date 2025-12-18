@@ -188,6 +188,7 @@ impl<T> Array<T>{
      * 
      * O(n)
      */
+    // [ANCHOR: INSERT_LOGIC]
     pub fn insert(&mut self, index: usize, value: T) -> Result<(), String> {
         if index > self.size {
             return Err(format!("Index {} out of range [0, {}]", index, self.size));

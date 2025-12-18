@@ -293,6 +293,7 @@ public:
     @param index插入位置
     @param value 要插入的值
     */
+    // [ANCHOR: INSERT_LOGIC]
     void insert(size_t index, const T& value){ // 参数 value 是 T 类型的常量引用（const reference）
         if (index > size_){
             throw std::out_of_range("Index out of range");
@@ -321,6 +322,7 @@ public:
     // 这里不用 const T&& value 是因为移动语义要求能够修改参数 value，
     // 即将 value 的内部资源“移动”（窃取）到容器内。如果加上 const，
     // 就无法执行 move 或修改操作，失去了使用右值引用的意义。
+    // [ANCHOR: INSERT_LOGIC]
     void insert(size_t index, T&& value){
         if (index > size_){
             throw std::out_of_range("Index out of range");
