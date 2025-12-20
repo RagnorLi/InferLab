@@ -11,8 +11,7 @@ function App() {
   }, []);
 
   return (
-    <main className="mountain-container">
-      <div className="mountain">⛰️</div>
+    <main className="app-container">
       <p className="welcome-text">{message}</p>
     </main>
   );

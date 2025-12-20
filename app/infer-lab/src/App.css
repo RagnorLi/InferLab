@@ -6,7 +6,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.mountain-container {
+.app-container {
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -16,22 +16,6 @@
   align-items: center;
   text-align: center;
   background: linear-gradient(to bottom, #87ceeb 0%, #e0f6ff 100%);
-}
-
-.mountain {
-  font-size: 8rem;
-  margin-bottom: 2rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 .welcome-text {
@@ -46,7 +30,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .mountain-container {
+  .app-container {
     background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 100%);
   }
   
