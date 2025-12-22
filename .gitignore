@@ -25,6 +25,7 @@ wheels/
 
 # IDEs
 .vscode/
+.cursor/
 .idea/
 *.swp
 *.swo
