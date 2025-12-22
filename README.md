@@ -33,7 +33,7 @@ inferlab/
 │   ├── debug_logs/       # Timeline 和 Log 分析报告
 │   └── experiments/      # 问题复现脚本
 │
-├── 03_cockpit/           # [驾驶舱] 可视化大屏
+├── 03_oscilloscope/           # [驾驶舱] 可视化大屏
 │   └── ...               # Tauri App - mini_vllm 的可视化界面
 │
 └── docs/                 # 航海日志，记录每天的 Aha Moment
@@ -91,10 +91,10 @@ python reproduce_oom.py          # 复现 OOM
 python capture_timeline.py       # 捕获 Timeline
 ```
 
-### 4️⃣ 可视化（03_cockpit）
+### 4️⃣ 可视化（03_oscilloscope）
 
 ```bash
-cd 03_cockpit
+cd 03_oscilloscope
 
 # 安装依赖
 pnpm install
@@ -120,7 +120,7 @@ pnpm dev
   ↓
   打断点调试 → 抓 Timeline → 复现问题 → 验证猜想
   
-阶段4: 可视化 (03_cockpit)
+阶段4: 可视化 (03_oscilloscope)
   ↓
   构建实时监控大屏
 ```
@@ -135,9 +135,8 @@ pnpm dev
 
 ## 📚 文档
 
-- [我的推理之路](docs/my-infer-road.md) - 学习路线图
+- [我的推理之路](roadmaps/my-infer-road.md) - 学习路线图
 - [LLM 推理 DSA Roadmap](00_mountain/leetcode/llm-inference-dsa-roadmap.md) - 数据结构学习指南
-- [Neetcode 150](00_mountain/leetcode/neetcode150.md) - LeetCode 精选
 
 ## 🤝 贡献
 

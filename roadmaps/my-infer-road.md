@@ -1,9 +1,11 @@
-# LLM推理架构师：世界顶级路径 - 执行甘特图
+# 硬核的LLM推理架构师
+
+> 本人已完整践行4年并总结输出在我司内部，99%我带的徒弟都没有坚持下去...
 
 ## 项目概览
 
 **总时长**：8-9个月（30周）  
-**目标**：从TinyLlama到DeepSeek V3，达到Principal/Architect级能力（年薪150万+）  
+**目标**：从TinyLlama到DeepSeek V3，达到Principal/Architect级能力
 **核心技术**：Dense Model + MoE + MLA + FP8 + Speculative Decoding + 长上下文
 
 ---
