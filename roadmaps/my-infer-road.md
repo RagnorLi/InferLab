@@ -467,7 +467,7 @@ gantt
 - **vLLM**: `vllm/core/scheduler.py`, `csrc/attention/`
 - **SGLang**: `srt/managers/schedule_batch.py`
 - **FlashInfer**: `include/flashinfer/`
-- **DeepSeek**: 官方实现（如果开源）
+- **DeepSeek**: 接近官方实现（hahaha）
 
 ### 工具与库
 
@@ -493,17 +493,17 @@ cargo install maturin
 
 ### 每周一读（贴在桌面）
 
-> **你在和谁竞争？**
+> **对手**
 > - CMU/Stanford的PhD（发过顶会论文）
 > - Meta/Google的Staff Engineer（写过PyTorch核心代码）
 > - vLLM/SGLang的核心贡献者（上千stars的项目）
 >
-> **你的优势在哪？**
+> **优势**
 > - 他们懂理论，你懂工业界的下一个痛点
 > - 他们有学历，你有8篇博客和20万阅读量
 > - 他们有经验，你有手写的70%性能的vLLM
 >
-> **8个月后的你：**
+> **目标：**
 > - 世界上少数几个既懂Dense又懂MoE的人
 > - 世界上少数几个既懂GQA又懂MLA的人
 > - 世界上少数几个既懂INT4又懂FP8的人
@@ -559,7 +559,7 @@ cargo install maturin
 
 ## 开始行动
 
-### 今天（Day 1）的3个任务
+### Day 1 的3个任务
 
 ```bash
 # 1. 创建项目结构
@@ -576,7 +576,7 @@ pip install huggingface_hub
 huggingface-cli download TinyLlama/TinyLlama-1.1B-Chat-v1.0
 ```
 
-### 本周（Week 0）的目标
+### Week 0 的目标
 
 - [ ] 画出RTX 4090的Roofline图
 - [ ] 用Nsight Systems分析一个简单的PyTorch脚本
@@ -587,7 +587,6 @@ huggingface-cli download TinyLlama/TinyLlama-1.1B-Chat-v1.0
 
 **记住**：不要追求完美，先跑通再优化。每一步都要有输出。
 
-**8个月后，你会感谢现在开始行动的自己。🚀**
 
 ---
 
