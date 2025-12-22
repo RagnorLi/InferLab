@@ -6,44 +6,55 @@ __pycache__/
 .Python
 env/
 venv/
-*.egg-info/
-
-# Node / pnpm
-node_modules/
-.pnpm-store/
+ENV/
+build/
+develop-eggs/
 dist/
-.turbo/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# IDE
-.cursor/
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
-agents.md
-
-# myDocs
-docs/
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Jupyter
-.ipynb_checkpoints/
+# Project specific
+02_surgery_room/debug_logs/*.log
+02_surgery_room/debug_logs/*.json
+02_surgery_room/debug_logs/*.txt
+!02_surgery_room/debug_logs/.gitkeep
 
-# Logs
-*.log
+# Node modules
+node_modules/
 
-# Android
-*.apk
-*.aab
-local.properties
-
-# iOS
-*.ipa
-Pods/
-
-# Rust / Tauri
+# Rust
 target/
-*.rs.bk
+Cargo.lock
+
+# Build artifacts
+dist/
+build/
+
+# Tauri
+03_cockpit/src-tauri/target/
+
+# Release keys (important!)
+*.keystore
+*.base64
+release-key.*

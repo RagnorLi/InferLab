@@ -1,0 +1,3 @@
+[submodule "02_surgery_room/vllm_source"]
+	path = 02_surgery_room/vllm_source
+	url = https://github.com/vllm-project/vllm.git
