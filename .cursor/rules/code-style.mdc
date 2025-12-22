@@ -1,7 +1,0 @@
----
-alwaysApply: true
----
-
-# code style 
-
- there will be no giant configuration objects, model factories, or if-then-else monsters in the code base. It is a single, cohesive, minimal, readable, hackable, maximally-forkable "strong baseline" codebase 
