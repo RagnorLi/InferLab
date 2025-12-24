@@ -96,12 +96,11 @@ class Vector:
         2. self.size = ?  # 当前有多少元素？（提示：开始时是 0）
         3. self.capacity = ?  # 容量是多少？（提示：用传入的 initial_capacity）
         """
-        # TODO: 在这里填写你的代码
-        # self.data = 
-        # self.size = 
-        # self.capacity = 
-        pass
+        self.data = [None] * initial_capacity # 解释器实际执行的逻辑类似于：result = a.__mul__(n)
+        self.size = 0
+        self.capacity = initial_capacity
     
+
     def push_back(self, value):
         """
         在末尾添加元素
@@ -118,22 +117,19 @@ class Vector:
         步骤 3: 把 value 放到 data[size] 位置
         步骤 4: size 加 1
         """
-        # TODO: 步骤 1 - 检查是否需要扩容
-        # if 
+        if (self.size == self.capacity):
+            self._resize(self.capacity * 2)
         
-        # TODO: 步骤 2 - 如果需要扩容，调用 self._resize()
-        #   提示：扩容时容量翻倍，即 self.capacity * 2
-        
-        # TODO: 步骤 3 - 把 value 放到 data[size] 位置
-        # self.data[?] = ?
-        
-        # TODO: 步骤 4 - size 加 1
-        # self.size = ?
-        pass
+        self.data[self.size] = value
+
+        self.size += 1
+
+
+
     
     def pop_back(self):
         """
-        删除并返回末尾元素
+        删除并返回末尾元素: 可以理解为逻辑删除
         
         任务：
         步骤 1: 检查是否为空（size == 0）
@@ -141,17 +137,13 @@ class Vector:
         步骤 3: size 减 1
         步骤 4: 返回 data[size]（注意：size 已经减 1 了）
         """
-        # TODO: 步骤 1 & 2 - 检查是否为空
-        # if 
-        #     raise IndexError("Vector is empty")
-        
-        # TODO: 步骤 3 - size 减 1
-        # self.size = ?
-        
-        # TODO: 步骤 4 - 返回最后一个元素
-        # return ?
-        pass
-    
+        if (self.size == 0):
+            raise IndexError("Vector is empty")
+
+        self.size -= 1
+
+        return self.data[self.size]
+
     def get(self, index):
         """
         通过索引获取元素
@@ -164,14 +156,12 @@ class Vector:
         步骤 2: 如果无效，抛出 IndexError(f"Index {index} out of range")
         步骤 3: 返回 data[index]
         """
-        # TODO: 步骤 1 & 2 - 检查索引
-        # if 
-        #     raise IndexError(f"Index {index} out of range")
-        
-        # TODO: 步骤 3 - 返回元素
-        # return ?
-        pass
-    
+        if not (0 <= index < self.size):
+            raise IndexError(f"Index {index} out of range")
+
+        return self.data[index]
+
+
     def _resize(self, new_capacity):
         """
         扩容函数（私有方法，前面有下划线）
@@ -185,17 +175,14 @@ class Vector:
         步骤 2: 把旧数组的所有元素复制到新数组（用 for 循环）
         步骤 3: 更新 self.data 和 self.capacity
         """
-        # TODO: 步骤 1 - 创建新数组
-        # new_data = [0] * new_capacity  # 或者用 None
+        new_vector = [None] * new_capacity
+
+        for i in range(self.size):
+            new_vector[i] = self.data[i]
         
-        # TODO: 步骤 2 - 复制旧数据
-        # for i in range(?):  # 循环多少次？
-        #     new_data[i] = ?
+        self.data = new_vector
+        self.capacity = new_capacity
         
-        # TODO: 步骤 3 - 更新
-        # self.data = ?
-        # self.capacity = ?
-        pass
     
     def stride(self, start_index, stride):
         """
@@ -207,14 +194,27 @@ class Vector:
         
         提示：用 while 循环，条件是 index < size
         """
-        # TODO: 实现步长访问
-        # result = []
-        # index = start_index
-        # while ?:
-        #     result.append(?)
-        #     index += ?
-        # return result
-        pass
+
+        if not (0 <= start_index < self.size):
+            raise IndexError(f"Index {start_index} out of bounds")
+        
+        if (stride == 0):
+            raise ValueError("stride can not be zero")
+
+        result = []
+        idx = start_index
+
+        if (stride > 0 ):
+            while(idx < self.size):
+                result.append(self.data[idx])
+                idx += stride
+        else:
+            while(idx >= 0):
+                result.append(self.data[idx])
+                idx += stride
+        
+        return result
+            
     
     def __len__(self):
         """
@@ -224,9 +224,7 @@ class Vector:
         - __len__ 是 Python 的特殊方法
         - 当你写 len(my_vector) 时，Python 会自动调用这个方法
         """
-        # TODO: 返回当前大小
-        # return ?
-        pass
+        return self.size
     
     def __repr__(self):
         """
@@ -236,9 +234,7 @@ class Vector:
         - __repr__ 定义对象的字符串表示
         - 返回一个字符串，描述这个对象
         """
-        # TODO: 返回一个字符串，比如 "Vector(size=3, capacity=4, data=[1, 2, 3])"
-        # return f"Vector(size={?}, capacity={?}, data={?})"
-        pass
+        return f"Vector(size={self.size}, capacity={self.capacity}, data={self.data})"
     
     def __getitem__(self, index):
         """
@@ -256,14 +252,11 @@ class Vector:
         
         提示：这个方法和 get() 方法逻辑一样，可以直接调用 self.get(index)
         """
-        # TODO: 步骤 1 & 2 - 检查索引
-        # if 
-        #     raise IndexError(f"Index {index} out of range")
+        if not (0 <= index < self.size):
+            raise IndexError(f"Index {index} out of bounds")
         
-        # TODO: 步骤 3 - 返回元素
-        # return ?
-        # 或者直接调用：return self.get(index)
-        pass
+        return self.get(index)
+
     
     def __setitem__(self, index, value):
         """
@@ -279,13 +272,10 @@ class Vector:
         步骤 2: 如果无效，抛出 IndexError(f"Index {index} out of range")
         步骤 3: 把 value 赋值给 data[index]
         """
-        # TODO: 步骤 1 & 2 - 检查索引
-        # if 
-        #     raise IndexError(f"Index {index} out of range")
+        if not (0 <= index < self.size):
+            raise IndexError(f"Index {index} out of bounds")
         
-        # TODO: 步骤 3 - 赋值
-        # self.data[?] = ?
-        pass
+        self.data[index] = value
 
 
 # ==============================================================================
@@ -298,18 +288,18 @@ if __name__ == "__main__":
     print(f"初始状态: {v}")
     
     # 测试 push_back
-    print("\n=== 测试 push_back ===")
+    print("\n===TestCase001 测试 push_back ===")
     for i in range(6):
         v.push_back(i)
         print(f"添加 {i} 后: {v}")
     
     # 测试 get
-    print("\n=== 测试 get ===")
+    print("\n===TestCase002 测试 get ===")
     print(f"v.get(0) = {v.get(0)}")
     print(f"v.get(2) = {v.get(2)}")
     
     # 测试 __getitem__ 和 __setitem__（下标访问）
-    print("\n=== 测试下标访问 v[index] ===")
+    print("\n===TestCase003 测试下标访问 v[index] ===")
     print(f"v[0] = {v[0]}")  # 使用 __getitem__
     print(f"v[1] = {v[1]}")
     v[0] = 99  # 使用 __setitem__
@@ -317,11 +307,11 @@ if __name__ == "__main__":
     print(f"v[0] = {v[0]}")
     
     # 测试 stride
-    print("\n=== 测试 stride ===")
+    print("\n===TestCase004 测试 stride ===")
     print(f"stride(1, 2) = {v.stride(1, 2)}")
     
     # 测试 pop_back
-    print("\n=== 测试 pop_back ===")
+    print("\n===TestCase005 测试 pop_back ===")
     while len(v) > 0:
         val = v.pop_back()
         print(f"弹出 {val} 后: {v}")
