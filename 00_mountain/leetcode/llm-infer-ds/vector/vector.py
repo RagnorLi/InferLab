@@ -211,6 +211,8 @@ class Vector:
         else:
             while(idx >= 0):
                 result.append(self.data[idx])
+                # Python：动态类型，自动处理边界情况
+                # C++：静态类型，需要程序员手动处理边界检查 这里无需处理索引下界
                 idx += stride
         
         return result
@@ -308,7 +310,7 @@ if __name__ == "__main__":
     
     # 测试 stride
     print("\n===TestCase004 测试 stride ===")
-    print(f"stride(1, 2) = {v.stride(1, 2)}")
+    print(f"stride(1, 2) = {v.stride(5, -2)}")
     
     # 测试 pop_back
     print("\n===TestCase005 测试 pop_back ===")
