@@ -69,13 +69,12 @@ impl<T> Drop for Vector<T> {
         // 2. 如果不为空，创建 layout
         // 3. 调用 dealloc 释放内存
 
-        // 你的代码在这里：
-        // if _______________ {
-        //     unsafe {
-        //         let layout = ____________________;
-        //         ____________________;
-        //     }
-        // }
+        if !self.data.is_null(){
+            unsafe {
+                let layout = std::alloc::Layout::array::<T>(self.capacity).unwrap();
+                std::alloc::dealloc(self.data as *mut u8, layout);
+            }
+        }
     }
 }
 
@@ -123,7 +122,7 @@ impl<T> Vector<T> {
     // - pub fn new() -> Self 意思是"公开函数，返回自己的类型"
     // - Self 是 Vector<T> 的别名
     // - -> Self 是返回类型注解
-    pub fn new() -> Self {
+    pub fn new() -> Self{
         Self::with_capacity(4)
     }
 
@@ -136,22 +135,9 @@ impl<T> Vector<T> {
         // - unsafe { alloc(layout) } 分配内存
         // - Layout::array::<T>(capacity) 创建数组布局
 
-        // 你的代码在这里：
-        // let capacity = ____________________;
-        // let data = if ____________________ {
-        //     unsafe {
-        //         let layout = ____________________;
-        //         ____________________ as *mut T
-        //     }
-        // } else {
-        //     ____________________
-        // };
-
-        // Vector {
-        //     data: ____________________,
-        //     size: ____________________,
-        //     capacity: ____________________,
-        // }
+        // TODO: 
+        
+          
     }
 
     // 任务5：实现 size() 方法

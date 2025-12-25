@@ -1,0 +1,16 @@
+[workspace]
+members = [
+    "llm-infer-ds/vector",
+    # 未来可以添加其他数据结构项目
+    # "llm-infer-ds/circular_queue",
+    # "llm-infer-ds/hash_map",
+    # "llm-infer-ds/heap",
+    # "llm-infer-ds/trie",
+    # "llm-infer-ds/doubly_linked_list",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
