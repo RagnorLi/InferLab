@@ -135,9 +135,21 @@ impl<T> Vector<T> {
         // - unsafe { alloc(layout) } 分配内存
         // - Layout::array::<T>(capacity) 创建数组布局
 
-        // TODO: 
-        
-          
+        let capacity = if initial_capacity == 0 { 0 } else { initial_capacity };
+
+        let data = if capacity > 0 {
+            // 标准写法: 先构造 Layout，再 unsafe 分配内存，再转换为 T 指针
+            let layout = std::alloc::Layout::array::<T>(capacity).unwrap();
+            unsafe {
+                std::alloc::alloc(layout)
+            }
+        }else {
+            std::ptr::null_mut()
+        };
+
+        // 可以不写成 capacity: capacity，只写 capacity 是因为结构体字段和变量同名时的 Rust 简写语法
+        Self { data: data as *mut T, size: 0, capacity:capacity }
+
     }
 
     // 任务5：实现 size() 方法
@@ -160,16 +172,8 @@ impl<T> Vector<T> {
         // 按照 Python/C++ 蓝图：
         // 步骤 1: if size >= capacity { resize() }
         // 步骤 2: unsafe { ptr::write(data.add(size), value) }
-        // 步骤 3: size += 1
-
-        // 你的代码在这里：
-        // if ____________________ {
-        //     ____________________;
-        // }
-        // unsafe {
-        //     ____________________;
-        // }
-        // ____________________;
+       
+        
     }
 
     // 任务8：实现 pop() 方法
@@ -182,15 +186,7 @@ impl<T> Vector<T> {
         // 步骤 3: let value = unsafe { ptr::read(data.add(size)) }
         // 步骤 4: Some(value)
 
-        // 你的代码在这里：
-        // if ____________________ {
-        //     ____________________;
-        // }
-        // ____________________;
-        // let value = unsafe {
-        //     ____________________
-        // };
-        // ____________________
+    
     }
 
     // 任务9：实现 get() 方法
