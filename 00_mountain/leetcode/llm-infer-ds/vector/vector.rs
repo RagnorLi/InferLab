@@ -38,6 +38,7 @@
 //   - 教育目的：掌握 unsafe 的正确使用
 // ==============================================================================
 
+
 // 任务1：定义 Vector 结构体
 // 语法桥接：
 // - struct Vector<T> 类似 C++ 的 template<typename T> class Vector
@@ -173,7 +174,16 @@ impl<T> Vector<T> {
         // 步骤 1: if size >= capacity { resize() }
         // 步骤 2: unsafe { ptr::write(data.add(size), value) }
        
-        
+        if self.size >= self.capacity {
+            self.resize(self.capacity * 2); // 内部加分号：因为这是side effect操作
+        } // 外部不加分号：又不是let result = if condition {};
+
+        unsafe {
+            std::ptr::write(self.data.add(self.size), value);
+        }
+
+        self.size += 1; 
+
     }
 
     // 任务8：实现 pop() 方法
@@ -185,7 +195,23 @@ impl<T> Vector<T> {
         // 步骤 2: size -= 1
         // 步骤 3: let value = unsafe { ptr::read(data.add(size)) }
         // 步骤 4: Some(value)
+        // 步骤 5（opt）: Shrinking
 
+        if self.size == 0 {
+            return None;
+        }
+
+        self.size -= 1;
+
+        let value = unsafe {
+            std::ptr::read(self.data.add(self.size))
+        };
+            
+        if self.size > 0 && self.size < self.capacity / 4 {
+           self.resize(self.capacity / 2);
+        }
+
+        Some(value)
     
     }
 
@@ -196,13 +222,21 @@ impl<T> Vector<T> {
         // 步骤 1: if index >= size { return None }
         // 步骤 2: unsafe { Some(&*data.add(index)) }
 
-        // 你的代码在这里：
-        // if ____________________ {
-        //     ____________________;
-        // }
-        // unsafe {
-        //     ____________________
-        // }
+        if index >= self.size {
+            return None;
+        }
+
+        unsafe {
+
+             /* 
+                self.data              // 类型：*mut T（可变裸指针）
+                   .add(index)         // 类型：*mut T（指针偏移，指向第 index 个元素）
+                   *                   // 类型：T（解引用，得到值）
+                   &                   // 类型：&T（取引用，得到不可变引用）
+                Some(...)              // 类型：Option<&T>
+            */
+            Some(&*self.data.add(index))
+        }
     }
 
     // 任务10：实现 Index trait - 支持 v[0] 语法
@@ -218,15 +252,15 @@ impl<T> std::ops::Index<usize> for Vector<T> {
 
     fn index(&self, index: usize) -> &Self::Output {
         // 【你来实现】Index trait
-        // 类似 get() 但遇到无效索引时 panic
+        // 类似 get() 但遇到无效索引时 panic        
         // assert!(index < size);
         // unsafe { &*data.add(index) }
 
-        // 你的代码在这里：
-        // ____________________!(____________________, ____________________);
-        // unsafe {
-        //     ____________________
-        // }
+        assert!(index < self.size);
+
+        unsafe {
+            &*self.data.add(index)
+        }
     }
 }
 
@@ -238,91 +272,125 @@ impl<T> std::ops::IndexMut<usize> for Vector<T> {
         // assert!(index < size);
         // unsafe { &mut *data.add(index) }
 
-        // 你的代码在这里：
-        // ____________________!(____________________, ____________________);
-        // unsafe {
-        //     ____________________
-        // }
+        assert!(index < self.size);
+
+        unsafe {
+            &mut * self.data.add(index)
+        }
     }
 }
 
 impl<T> Vector<T> {
     // 任务11：实现 resize() 方法 - 核心扩容逻辑
-    fn resize(&mut self) {
-        // 【你来实现】resize 扩容逻辑 - 最复杂的部分
-        // 步骤 1: 计算新容量 (capacity == 0 ? 1 : capacity * 2)
-        // 步骤 2: 分配新内存 new_data
-        // 步骤 3: 复制旧数据 ptr::copy_nonoverlapping
-        // 步骤 4: 释放旧内存 dealloc
-        // 步骤 5: 更新 data 和 capacity
+    fn resize(&mut self, new_capacity: usize) {
+        // 0. 这里的核心决策：我们使用 alloc 还是 realloc?
+        // 通常 std::Vec 会用realloc来优化，但为了教学，我们修正你的 alloc/copy 逻辑。
 
-        // 你的代码在这里：
-        // let new_capacity = ____________________;
-        //
-        // let new_data = ____________________;
-        //
-        // // 复制数据
-        // if ____________________ {
-        //     unsafe {
-        //         ____________________;
-        //     }
-        // }
-        //
-        // // 释放旧内存
-        // if ____________________ {
-        //     unsafe {
-        //         ____________________;
-        //         ____________________;
-        //     }
-        // }
-        //
-        // self.data = ____________________;
-        // self.capacity = ____________________;
+        // 1.计算新的 Layout
+        let new_layout = if new_capacity > 0 {
+            Some(std::alloc::Layout::array::<T>(new_capacity).unwrap())
+        } else {
+            None
+        };
+
+        // 2. 分配新内存
+        let new_data = if let Some(layout) = new_layout {
+            unsafe {
+                let ptr = std::alloc::alloc(layout) as *mut T;
+
+                // 检查内存分配是否成功
+                if ptr.is_null(){
+                    std::alloc::handle_alloc_error(layout);
+                }
+
+                ptr
+            }
+        } else {
+            std::ptr::null_mut()
+        };
+
+        // 3. 决定要拷贝多少数据
+        // 如果你在缩容，你不能拷贝 self.size 为了自身健壮性你只能拷贝 min(self.size, new_capacity)
+        let copy_count = if self.size < new_capacity { self.size } else {
+            new_capacity
+        };
+
+        // 4. 复制旧数据
+        if !self.data.is_null() && copy_count > 0 {
+            unsafe {
+                std::ptr::copy_nonoverlapping(self.data, new_data, copy_count);
+            }
+        }
+
+        // 5. 释放旧内存
+        if !self.data.is_null() {
+            unsafe {
+                // 注： dealloc 必须使用当初 alloc 时完全一致的 capacity
+                let old_layout = std::alloc::Layout::array::<T>(self.capacity).unwrap();
+                std::alloc::dealloc(self.data as *mut u8, old_layout);
+            }
+        }
+
+        // 6. 更新结构体成员
+        self.data = new_data;
+        self.capacity = new_capacity;
+
+        // 如果缩容了，size 也必须被截断！
+        if self.size > new_capacity {
+            self.size = new_capacity;
+        }
+
+        // 潜在问题： 如果 T 拥有堆内存 （比如 String）, 被截断丢弃的那些元素 （从 new_capacity 到 old_size） 需要被手动drop()掉，否则会内存泄漏！但这取决于 resize 设计定义上是 ”仅仅调整容量“ 还是 ”强制截断“。
+
     }
 
     // 任务12：实现 stride() 方法 - Tensor 风格访问
     pub fn stride(&self, start_index: usize, stride: isize) -> Vec<T>
     where
-        T: Clone, // 需要 Clone trait 来复制元素
+        T: Clone, // 必须有 Clone, 因为我们要把数据复制一份带走
     {
-        // 【你来实现】stride 步长访问
-        // 类似 C++ 版本，但返回 Vec<T>
-        // 步骤 1: 检查 start_index 和 stride 参数
-        // 步骤 2: 创建 result 向量
-        // 步骤 3: 根据 stride 正负实现不同的遍历逻辑
-        // 步骤 4: 使用 get() 获取元素并 push 到 result
 
-        // 你的代码在这里：
-        // if ____________________ {
-        //     return ____________________;
-        // }
-        // if ____________________ {
-        //     return ____________________;
-        // }
-        //
-        // let mut result = ____________________;
-        // let mut current_index = ____________________;
-        //
-        // if ____________________ > 0 {
-        //     while ____________________ {
-        //         if let Some(value) = ____________________ {
-        //             ____________________;
-        //         }
-        //         ____________________ += ____________________;
-        //     }
-        // } else {
-        //     while ____________________ >= 0 {
-        //         if let Some(value) = ____________________ {
-        //             ____________________;
-        //         }
-        //         if ____________________ {
-        //             break;
-        //         }
-        //         ____________________ += ____________________;
-        //     }
-        // }
-        //
-        // result
+        // 1. 检查参数 
+        // start_index 是 usize , 正整数 本身不可能 小于 0， 所以无需检查 < 0
+        if start_index >= self.size {
+            panic!("start index out of bounds!")
+        }
+
+        if stride == 0 {
+            panic!("stride can not be zero!")
+        } 
+
+        // 2. 创建result 向量
+        // 直接用标准库 Vec::new() , 如果想优化性能，可以用Vec::with_capacity(预估大小)
+        let mut result = Vec::new();
+
+        // 3. 遍历逻辑
+        // usize 无符号 mix isize 有符号，那安全的做法就是把所有坐标都暂时当成isize 有符号来处理
+        let mut current_pos = start_index as isize;
+        let limit = self.size as isize;
+
+        loop {
+            // 检查当前位置是否越界
+            //  如果是正步长不能超过limit 
+            //  如果是负步长不能小于0
+            if current_pos < 0 || current_pos >= limit {
+                break;
+            }
+
+            // 4. 获取元素并push
+            // 需要把isize转回usize才能去访问内存
+            let idx = current_pos as usize;
+
+            if let Some(val) = self.get(idx) {
+                result.push(val.clone());
+            }
+
+            // 移动一步
+            current_pos += stride;
+        }
+        
+        return result;
+        
     }
 }
 
@@ -357,24 +425,36 @@ fn main() {
     // 任务：创建 Vector 实例并检查初始状态
     // 提示：Vector<i32> v = Vector::new();
     // println!("[Step 1] Vector 创建完成, size={}, capacity={}", v.size(), v.capacity());
+    let mut v = Vector::<i32>::new();
+    println!("[Step 1] Vector 创建完成, size={}, capacity={}", v.size(), v.capacity());
 
     // 【第二步：测试 push 和扩容】
     // 任务：添加元素并观察扩容
     // 提示：for i in 1..=8 { v.push(i); }
     // println!("[Step 2] 扩容后 size={}, capacity={}", v.size(), v.capacity());
+    for i in 1..=8{
+        v.push(i);
+    }
+    println!("[Step 2] 扩容后 size={}, capacity={}", v.size(), v.capacity());
 
     // 【第三步：测试索引访问】
     // 任务：使用 [] 语法访问元素
     // 提示：println!("[Step 3] 第一个元素: {}", v[0]);
+    println!("[Step 3] 第三个元素: {}", v[2]);
 
     // 【第四步：测试 stride】
     // 任务：实现步长访问
     // 提示：let result = v.stride(1, 2);
     // println!("[Step 4] stride 结果: {:?}", result);
+    let result = v.stride(v.size - 1, -2);
+    println!("[Step 4] stride 结果: {:?}", result);
 
     // 【第五步：测试 pop】
     // 任务：弹出元素并观察缩容
     // 提示：while let Some(val) = v.pop() { print!("{} ", val); }
+    while let Some(val) = v.pop() {
+        print!("{}", val);
+    }
 
     println!("\n恭喜！你完成了 Rust Vector 的实现！");
     println!("现在可以运行: rustc vector.rs && ./vector");
