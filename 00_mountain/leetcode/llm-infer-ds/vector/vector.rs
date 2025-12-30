@@ -455,7 +455,5 @@ fn main() {
     while let Some(val) = v.pop() {
         print!("{}", val);
     }
-
-    println!("\n恭喜！你完成了 Rust Vector 的实现！");
-    println!("现在可以运行: rustc vector.rs && ./vector");
+    println!("运行: rustc vector.rs && ./vector");
 }
