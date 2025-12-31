@@ -1,0 +1,8 @@
+[package]
+name = "hash_map"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "hash_map"
+path = "hash_map.rs"

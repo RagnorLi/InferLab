@@ -1,9 +1,9 @@
 [workspace]
 members = [
     "llm-infer-ds/vector",
+    "llm-infer-ds/hash_map",
     # 未来可以添加其他数据结构项目
     # "llm-infer-ds/circular_queue",
-    # "llm-infer-ds/hash_map",
     # "llm-infer-ds/heap",
     # "llm-infer-ds/trie",
     # "llm-infer-ds/doubly_linked_list",
