@@ -186,11 +186,24 @@ where
         // 2.获取桶的可变引用
         let bucket = &mut self.buckets[bucket_index]; // 这里不加mut 下面没办法remove
 
-        // 3.遍历查找要删除的元素
-        if let Some(pos) = bucket.iter().position(|pair| &pair.0 == key){
-            // 删除元素并更新计数
+        // 3. 遍历查找要删除的元素
+        if let Some(pos) = bucket.iter().position(|pair| &pair.0 == key) {
+            // 删除元素
             bucket.remove(pos);
             self.count -= 1;
+
+            // ==========================================
+            // 新增：缩容逻辑 (Shrinking Logic)
+            // ==========================================
+            // 触发条件：
+            // 1. 当前元素密度低于 25% (0.25)
+            // 2. 当前桶大小大于最小限制 (比如 4)，防止缩没了
+            if self.size > 4 && (self.count as f64 / self.size as f64) < 0.25 {
+                // 缩容为当前的一半
+                let new_size = self.size / 2;
+                self.resize(new_size);
+            }
+
             return true;
         }
 
@@ -306,5 +319,50 @@ mod tests {
         for i in 0..count {
             assert_eq!(map.get(&i), Some(&(i * 10)));
         }
+    }
+
+    #[test]
+    fn test_shrinking() {
+        // 1. 初始小容量
+        let mut map = HashMap::new(4);
+        
+        // 2. 疯狂插入，触发扩容
+        // 插入 20 个元素。
+        // 4 -> 8 (insert #4) -> 16 (insert #7) -> 32 (insert #13)
+        for i in 0..20 {
+            map.put(i, i);
+        }
+        
+        println!("扩容后的 Size: {}", map.size);
+        assert!(map.size >= 16); // 应该是 32
+        assert_eq!(map.count, 20);
+
+        // 3. 开始删除，触发缩容
+        // 目前 size=32, count=20. 
+        // 阈值是 0.25 * 32 = 8.
+        // 我们删除直到剩 7 个元素 (7/32 < 0.25)，应该触发缩容变成 16
+        for i in 0..13 {
+            map.remove(&i);
+        }
+        
+        println!("删除部分后的 Count: {}, Size: {}", map.count, map.size);
+        assert_eq!(map.count, 7);
+        // 此时应该触发了一次缩容 (32 -> 16)
+        assert_eq!(map.size, 16);
+
+        // 4. 继续删除
+        // 目前 size=16, count=7.
+        // 阈值是 0.25 * 16 = 4.
+        // 删除直到剩 3 个 (3/16 < 0.25)，应该触发缩容变成 8
+        for i in 13..17 {
+            map.remove(&i);
+        }
+
+        println!("再次删除后的 Count: {}, Size: {}", map.count, map.size);
+        assert_eq!(map.count, 3);
+        assert_eq!(map.size, 8);
+        
+        // 5. 验证剩下的数据还能查到 (Rehash 没问题)
+        assert_eq!(map.get(&19), Some(&19));
     }
 }
